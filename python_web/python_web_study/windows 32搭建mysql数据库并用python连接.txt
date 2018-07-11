@@ -1,0 +1,217 @@
+1. 下载mysql zip 安装包：mysql-5.7.22-win32
+
+    路径：https://dev.mysql.com/downloads/mysql/5.6.html#downloads
+
+   安装参考：https://www.jb51.net/article/134178.htm
+
+   1)解压mysql-5.7.22-win32 到F:\mysql
+
+   2）在F:\mysql\mysql-5.7.22-win32下新建一个my.ini文件，内容：      
+
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+[mysql]
+# 设置mysql客户端默认字符集
+default-character-set=utf8
+[mysqld]
+#设置3306端口
+port = 3306
+# 设置mysql的安装目录
+basedir=F:\mysql\mysql-5.7.22-win32
+# 设置mysql数据库的数据的存放目录
+datadir=F:\mysql\mysql-5.7.22-win32\data
+# 允许最大连接数
+max_connections=200
+# 服务端使用的字符集默认为8比特编码的latin1字符集
+character-set-server=utf8
+#开启查询缓存
+explicit_defaults_for_timestamp=true
+skip-grant-tables
+# 创建新表时将使用的默认存储引擎
+default-storage-engine=INNODB
+    3）设置环境变量：
+
+    在环境变量path中增加F:\mysql\mysql-5.7.22-win32\bin ,记得两个路径间加分号;
+
+    4）右键 cmd.exe,选择以管理员方式运行
+
+    mysqld --initialize --user=mysql --console
+
+    结果：    
+
+F:\mysql\mysql-5.7.22-win32>mysqld --initialize --user=mysql --console
+2018-07-11T12:12:17.966314Z 0 [Warning] TIMESTAMP with implicit DEFAULT value is
+ deprecated. Please use --explicit_defaults_for_timestamp server option (see doc
+umentation for more details).
+2018-07-11T12:12:24.998716Z 0 [Warning] InnoDB: New log files created, LSN=45790
+2018-07-11T12:12:25.708757Z 0 [Warning] InnoDB: Creating foreign key constraint
+system tables.
+2018-07-11T12:12:26.023775Z 0 [Warning] No existing UUID has been found, so we a
+ssume that this is the first time that this server has been started. Generating
+a new UUID: ac801cca-8503-11e8-a781-9c2a70befb4c.
+2018-07-11T12:12:26.108780Z 0 [Warning] Gtid table is not ready to be used. Tabl
+e 'mysql.gtid_executed' cannot be opened.
+2018-07-11T12:13:07.978175Z 1 [Note] A temporary password is generated for root@
+localhost: #MvUKmukE1f1
+    #MvUKmukE1f1 为数据库的初始密码。
+
+    5)安装服务
+
+    mysqld install
+
+    注意要去F:\mysql\mysql-5.7.22-win32\bin目录下运行此命令，不然启动服务会出错。
+
+   6）启动服务
+   net start MySQL
+
+   7）停止服务
+
+   net stop MySQL
+
+   8）登录数据库
+
+    mysql -u root -p 
+
+    密码：#MvUKmukE1f1
+
+   9）修改登录密码
+
+   登录mysql后输入如下命令，mysql123是设置的新密码
+
+   set password for root@localhost=password('mysql123');
+
+   如下，表示修改成功。
+
+    Query OK, 0 rows affected, 1 warning (0.09 sec)
+
+   10) 重新登录mysql
+
+    mysql -u root -p 
+    密码：mysql123
+
+2. 如果用python操作mysql需要使需要MySQL-python驱动
+
+    下载地址：https://pypi.python.org/pypi/MySQL-python/，最开始用源码MySQL-python-1.2.5.zip安装未成功，出现一些错误，如
+
+   1）error: Microsoft Visual C++ 9.0 is required. Get it from http://aka.ms/vcpython27
+
+   2）_mysql.c(42) : fatal error C1083: 无法打开包括文件:“config-win.h”: No such file or directory
+
+   之后直接用MySQL-python-1.2.5.win32-py2.7.exe 安装成功(可在CSDN下载)。
+
+3.python连接mysql测试：
+
+C:\Users\Administrator>python
+Python 2.7.13 (v2.7.13:a06454b1afa1, Dec 17 2016, 20:42:59) [MSC v.1500 32
+Intel)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+>>>
+>>> import MySQLdb
+>>>
+    如果没有报错，说明安装好了。
+
+    用python操作数据库参考：https://www.cnblogs.com/fnng/p/3565912.html
+
+ 1）登录mysqls，创建数据库test：
+
+    CREATE DATABASE test;
+
+ 2）查看数据库：
+
+     show databases;
+
+ 3）在cmd运行如下python脚本在test数据库的 student表插入一条记录
+
+#!/usr/bin/python  
+
+# -*- coding: utf-8 -*-  
+
+import MySQLdb
+#链接数据库
+conn= MySQLdb.connect(
+        host='localhost',
+        port = 3306,
+        user='root',
+        passwd='mysql123',
+        db ='test',
+        )
+cur = conn.cursor()
+
+#创建数据表
+cur.execute("create table student(id int ,name varchar(20),class varchar(30),age varchar(10))")
+
+#插入一条数据
+cur.execute("insert into student values('2','Tom','3 year 2 class','9')")
+
+cur.close()
+conn.commit()
+conn.close()
+4）登录mysql数据库查看表记录：
+
+mysql> use test;
+
+mysql> select * from student;
+
+可以看到如下记录：
+
+mysql> select * from student;
++------+------+----------------+------+
+| id   | name | class          | age  |
++------+------+----------------+------+
+|    2 | Tom  | 3 year 2 class | 9    |
++------+------+----------------+------+
+
+1 row in set (0.00 sec)
+
+5）用python脚本 mysql_test.py 查看插入的数据库记录：
+
+#!/usr/bin/python  
+# -*- coding: utf-8 -*-  
+
+import MySQLdb
+
+conn= MySQLdb.connect(
+        host='localhost',
+        port = 3306,
+        user='root',
+        passwd='mysql123',
+        db ='test',
+        )
+cur = conn.cursor()
+
+#获得表中有多少条数据
+aa=cur.execute("select * from student")
+print aa
+
+#打印表中的多少数据
+info = cur.fetchmany(aa)
+for ii in info:
+    print ii
+
+cur.close()
+conn.commit()
+conn.close()
+运行此脚本后，结果：
+
+F:\mysql>python mysql_test.py
+1
+(2L, 'Tom', '3 year 2 class', '9')
+
